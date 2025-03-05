@@ -70,37 +70,41 @@ class _MetaballsRendererState extends State<MetaballsRenderer> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<FragmentShader>(
-        future: _initFuture,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final FragmentShader shader = snapshot.data!;
+      future: _initFuture,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          final FragmentShader shader = snapshot.data!;
 
-            shader.setFloat(0, widget.time);
-            shader.setFloat(1, min(max(1 - widget.glowRadius, 0), 1));
-            shader.setFloat(2, min(max(widget.glowIntensity, 0), 1));
-            shader.setFloat(3, widget.metaballs.length.toDouble());
+          shader.setFloat(0, widget.time);
+          shader.setFloat(1, min(max(1 - widget.glowRadius, 0), 1));
+          shader.setFloat(2, min(max(widget.glowIntensity, 0), 1));
+          shader.setFloat(3, widget.metaballs.length.toDouble());
 
-            for (int i = 0; i < widget.metaballs.length; i++) {
-              final int offset = (i * 3) + 4;
-              final metaball = widget.metaballs[i];
-              shader.setFloat(offset, metaball.x);
-              shader.setFloat(offset + 1, metaball.y);
-              shader.setFloat(offset + 2, metaball.r);
-            }
-
-            return ShaderMask(
-              blendMode: BlendMode.dstATop,
-              shaderCallback: (bounds) {
-                return shader;
-              },
-              child: AnimatedContainer(
-                duration: widget.animationDuration,
-                decoration: BoxDecoration(gradient: widget.gradient, color: widget.color),
-              ),
-            );
-          } else {
-            return Container();
+          for (int i = 0; i < widget.metaballs.length; i++) {
+            final int offset = (i * 3) + 4;
+            final metaball = widget.metaballs[i];
+            shader.setFloat(offset, metaball.x * widget.pixelRatio);
+            shader.setFloat(offset + 1, metaball.y * widget.pixelRatio);
+            shader.setFloat(offset + 2, metaball.r * widget.pixelRatio);
           }
-        });
+
+          return ShaderMask(
+            blendMode: BlendMode.dstATop,
+            shaderCallback: (bounds) {
+              return shader;
+            },
+            child: AnimatedContainer(
+              duration: widget.animationDuration,
+              decoration: BoxDecoration(
+                gradient: widget.gradient,
+                color: widget.color,
+              ),
+            ),
+          );
+        } else {
+          return Container();
+        }
+      },
+    );
   }
 }
